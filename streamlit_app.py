@@ -1,11 +1,14 @@
 import streamlit as st
 import keras
-from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 import numpy as np
 import librosa
 
+
 def convert_class_to_emotion(pred):
+    """
+    Method to convert the predictions (int) into human-readable strings.
+    """
+
     label_conversion = {
         0: 'neutral',
         1: 'calm',
@@ -16,23 +19,8 @@ def convert_class_to_emotion(pred):
         6: 'disgust',
         7: 'surprised'
     }
+
     return label_conversion.get(int(pred), 'Unknown')
-
-def build_cnn_model(input_shape):
-    model = Sequential()
-    model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=input_shape))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Flatten())
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(8, activation='softmax'))  # 8 classes for emotions
-
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    return model
 
 def main():
     st.title("Speech Emotion Recognition App")
@@ -52,10 +40,11 @@ def main():
 
 def make_prediction(model_path, audio_file):
     loaded_model = keras.models.load_model(model_path)
-    data, sampling_rate = librosa.load(audio_file, res_type='kaiser_fast', duration=2.5, sr=22050*2, offset=0.5)
+    summ = loaded_model.summary()
+    data, sampling_rate = librosa.load(audio_file)
     mfccs = np.mean(librosa.feature.mfcc(y=data, sr=sampling_rate, n_mfcc=40).T, axis=0)
-    x = np.expand_dims(mfccs, axis=0)
-    x = np.expand_dims(x, axis=3)  # Add a channel dimension for CNN input
+    x = np.expand_dims(mfccs, axis=1)
+    x = np.expand_dims(x, axis=0)
     predict_x = loaded_model.predict(x)
     prediction = np.argmax(predict_x, axis=1)
     prediction = convert_class_to_emotion(prediction)

@@ -3,12 +3,7 @@ import keras
 import numpy as np
 import librosa
 
-
 def convert_class_to_emotion(pred):
-    """
-    Method to convert the predictions (int) into human-readable strings.
-    """
-
     label_conversion = {
         0: 'neutral',
         1: 'calm',
@@ -19,7 +14,6 @@ def convert_class_to_emotion(pred):
         6: 'disgust',
         7: 'surprised'
     }
-
     return label_conversion.get(int(pred), 'Unknown')
 
 def main():
@@ -40,11 +34,10 @@ def main():
 
 def make_prediction(model_path, audio_file):
     loaded_model = keras.models.load_model(model_path)
-    summ = loaded_model.summary()
-    data, sampling_rate = librosa.load(audio_file)
+    data, sampling_rate = librosa.load(audio_file, sr=None)  # Use the original sampling rate
     mfccs = np.mean(librosa.feature.mfcc(y=data, sr=sampling_rate, n_mfcc=40).T, axis=0)
-    x = np.expand_dims(mfccs, axis=1)
-    x = np.expand_dims(x, axis=0)
+    x = np.expand_dims(mfccs, axis=0)
+    x = np.expand_dims(x, axis=2)  # Add a channel dimension for CNN input
     predict_x = loaded_model.predict(x)
     prediction = np.argmax(predict_x, axis=1)
     prediction = convert_class_to_emotion(prediction)

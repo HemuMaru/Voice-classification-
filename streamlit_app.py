@@ -38,7 +38,7 @@ def main():
     st.title("Speech Emotion Recognition App")
 
     st.sidebar.header("Settings")
-    model_path = st.sidebar.text_input("Enter Model Path", "CNN_SER_model.h5")
+    model_path = st.sidebar.text_input("Enter Model Path", "SER_model.h5")
     
     uploaded_file = st.sidebar.file_uploader("Choose an audio file", type=["wav"])
 

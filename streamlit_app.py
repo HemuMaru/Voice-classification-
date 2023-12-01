@@ -1,4 +1,3 @@
-pip install resampy
 import streamlit as st
 import keras
 from keras.models import Sequential

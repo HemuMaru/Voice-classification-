@@ -2,6 +2,8 @@ import streamlit as st
 import keras
 import numpy as np
 import librosa
+import matplotlib.pyplot as plt
+import io
 
 def convert_class_to_emotion(pred):
     label_conversion = {
@@ -27,8 +29,9 @@ def main():
     if st.sidebar.button("Make Prediction") and uploaded_file is not None:
         st.audio(uploaded_file, format="audio/wav")
         try:
-            prediction = make_prediction(model_path, uploaded_file)
+            prediction, confidence = make_prediction(model_path, uploaded_file)
             st.write(f"Predicted Emotion: {prediction}")
+            st.write(f"Confidence: {confidence:.2%}")
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
 
@@ -40,8 +43,9 @@ def make_prediction(model_path, audio_file):
     x = np.expand_dims(x, axis=2)  # Add a channel dimension for CNN input
     predict_x = loaded_model.predict(x)
     prediction = np.argmax(predict_x, axis=1)
-    prediction = convert_class_to_emotion(prediction)
-    return prediction
+    confidence = np.max(predict_x)
+    emotion = convert_class_to_emotion(prediction)
+    return emotion, confidence
 
 if __name__ == "__main__":
     main()
